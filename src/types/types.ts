@@ -2,6 +2,7 @@
 export type GameState =
   "refreshDeck" | "waitForBets" | "playersReady" | "gameStarted" | "gameFinished" | undefined;
 
+// TODO: DELETE THIS ONE
 export type PlayersHands = Record<number, CardType[]>;
 
 // Cards
@@ -10,7 +11,7 @@ export type Number = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' 
 export type CardType = { number: Number, suit: Suit };
 
 // Player
-export type PlayerType = { id: number, money: number };
+export type PlayerType = { id: number, money: number, hands: CardType[][] };
 
 // Result
 export type ResultType = 'win' | 'lose' | 'draw' |

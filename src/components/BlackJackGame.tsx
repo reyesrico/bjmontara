@@ -60,6 +60,7 @@ const BlackJackGame = (props: BlackJackGameProps) => {
   const [playersHand, setPlayersHand] = useState<PlayersHands>({});
   const [dealerHand, setDealerHand] = useState<CardType[]>([]);
   const [turn, setTurn] = useState(0);
+  const [handsTurn, setHandsTurn] = useState(0);
   const [showBook, setShowBook] = useState<boolean>(true);
   const [isDealerBJ, setIsDealerBJ] = useState<boolean>(false);
   const [playersReady, setPlayersReady] = useState<ReadyPlayers>({});
@@ -88,7 +89,7 @@ const BlackJackGame = (props: BlackJackGameProps) => {
     resetGame();
     let newPlayers = [];
     for (let i=0; i<numberPlayers; i++) {
-      newPlayers.push({ id: i, money: 1000 });
+      newPlayers.push({ id: i, money: 1000, hands: [] });
     }
     setPlayers(newPlayers);
     refreshDeck();
@@ -158,6 +159,40 @@ const BlackJackGame = (props: BlackJackGameProps) => {
     }
   }
 
+  const doubleDown = () => {
+    const handsId = 0;
+    let playerHand = playersHand[turn];
+    let card = drawCards(1)[handsId];
+    playerHand.push(card);
+    setPlayersHand({
+      ...playersHand,
+      [turn]: playerHand,
+    });
+
+    // Applying double down bet
+    const currentBet = bets.currentBet?.(turn, handsId) || 0;
+    bets.addBet?.(turn, handsId, currentBet);
+
+    if (turn < players.length-1) {
+      setTurn(turn + 1);
+    } else {
+      stand();
+    }
+  }
+
+  const split = () => {
+    let playerHand = playersHand[turn];
+    
+    const firstHand = [playerHand[0], drawCards(1)[0]];
+    const secondHand = [playerHand[1], drawCards(1)[0]];
+
+    const player = players.filter(player => player.id === turn)[0];
+    player.hands = [firstHand, secondHand];
+
+    const currentBet = bets.currentBet?.(turn, 0) || 0;
+    bets.addBet?.(turn, 1, currentBet);
+  }
+
   const hit = () => {
     let playerHand = playersHand[turn];
     let card = drawCards(1)[0];
@@ -220,6 +255,8 @@ const BlackJackGame = (props: BlackJackGameProps) => {
               turn={turn}
               hit={hit}
               stand={stand}
+              doubleDown={doubleDown}
+              split={split}
               gameState={gameState}
               isDealerBJ={isDealerBJ}
               isPlayerBJAction={() => {

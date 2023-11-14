@@ -14,6 +14,8 @@ interface PlayerProps {
   turn: number;
   hit: () => void;
   stand: () => void;
+  doubleDown: () => void;
+  split: () => void;
   gameState: GameState;
   isDealerBJ: boolean;
   isPlayerBJAction: () => void;
@@ -68,12 +70,13 @@ const getStyles = (args: {
 });
 
 const Player = (props: PlayerProps) => {
-  const { bets, player, playerHand, turn, playerReady,
-    hit, stand, gameState, isDealerBJ, isPlayerBJAction } = props;
+  const { bets, player, playerHand, turn, playerReady, doubleDown,
+    split, hit, stand, gameState, isDealerBJ, isPlayerBJAction } = props;
   const styles = getStyles({ playerIndex: player.id, turn });
   const liveGame = gameState === "gameStarted";
   const disableHit = liveGame && getTotalFromCards(playerHand).isBust;
   const playerBJ = liveGame && getTotalFromCards(playerHand).isBlackJack;
+  const disableDoubleDown = playerHand?.length !== 2 || playerBJ;
 
   React.useEffect(() => {
     if (player.id === turn && playerBJ) {
@@ -85,6 +88,11 @@ const Player = (props: PlayerProps) => {
     const liveGame = gameState === "gameStarted";
     return liveGame && player.id === turn && !isDealerBJ && !playerBJ;
   }, [isDealerBJ, gameState, playerBJ, player, turn]);
+
+  const buttonStyle = React.useCallback((doubleDown = false) => {
+    const isDoubleDown = doubleDown ? disableDoubleDown : false;
+    return (disableHit || isDoubleDown) ? styles.buttonDisabled : styles.button;
+  }, [disableDoubleDown, disableHit, styles]);
 
   return (
     <div style={styles.container} >
@@ -102,12 +110,12 @@ const Player = (props: PlayerProps) => {
       {showButtons && (
         <div style={styles.buttonsRow}>
           <div style={styles.buttonsColumn}>
-            <button disabled={disableHit} style={styles.button} onClick={hit}>Hit</button>
-            <button style={styles.button} onClick={stand}>Stand</button>
+            <button disabled={disableHit} style={buttonStyle()} onClick={hit}>Hit</button>
+            <button style={buttonStyle()} onClick={stand}>Stand</button>
           </div>
           <div style={styles.buttonsColumn}>
-            <button disabled={true} style={styles.buttonDisabled} onClick={() => {}}>Double Down</button>
-            <button disabled={true} style={styles.buttonDisabled} onClick={() => {}}>Split</button>
+            <button disabled={disableDoubleDown} style={buttonStyle(true)} onClick={doubleDown}>Double Down</button>
+            <button disabled={true} style={styles.buttonDisabled} onClick={split}>Split</button>
           </div>
         </div>
       )}
