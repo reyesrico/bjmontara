@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { dealerShouldHit, generateBJDeck, getTotalFromCards } from './cardHelpers';
-import { CardType } from '@/types/types';
+import { CardType, DeckHook } from '@/types/types';
 
 export const useDeck = () => {
   const { deckIndexFinish: dif, deck: initialDeck } = generateBJDeck();
@@ -37,5 +37,11 @@ export const useDeck = () => {
     return newDealerCards;
   }
 
-  return { deck, deckIndexFinish, refreshDeck, drawCards, drawCardsForDealer };
+  return {
+    deck,
+    deckIndexFinish,
+    refreshDeck,
+    drawCards,
+    drawCardsForDealer
+  } as DeckHook;
 }

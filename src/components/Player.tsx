@@ -1,25 +1,22 @@
 import React from 'react';
 
-import Card from './Card';
-import Total from './Total';
-
-import { getTotalFromCards } from '@/helpers/cardHelpers';
-import { BetsControl, CardType, GameState, PlayerType } from '@/types/types';
+import { BetsControl, CardType, GameState, PlayersHook, PlayerType } from '@/types/types';
+import PlayerHand from './PlayerHand';
 import PlayerBet from './PlayerBet';
+import { getTotalFromCards } from '@/helpers/cardHelpers';
 
 interface PlayerProps {
   player: PlayerType;
-  playerHand: CardType[];
+  isLastPlayer: boolean;
   bets: BetsControl;
   turn: number;
-  hit: () => void;
-  stand: () => void;
-  doubleDown: () => void;
-  split: () => void;
   gameState: GameState;
   isDealerBJ: boolean;
-  isPlayerBJAction: () => void;
   playerReady: () => void;
+  deckHook: any;
+  playersHook: PlayersHook;
+  setTurn: (turn: number) => void;
+  minBet: number;
 }
 
 const getStyles = (args: {
@@ -34,91 +31,111 @@ const getStyles = (args: {
     backgroundColor: "#CDA37D",
     color: "#6A3A1C",
   },
-  button: {
-    backgroundColor: "#61AFD5",
-    color: "black",
-    width: 100,
-    height: 50,
-    padding: 4,
-    border: "1px black solid",
-    margin: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: "lightgrey",
-    color: "black",
-    width: 100,
-    height: 50,
-    padding: 4,
-    border: "1px black solid",
-    margin: 4,
-  },
-  cardsContainer: {
+  handsContainer: {
     display: "flex",
     flexDirection: "row",
-    backgroundColor: args.playerIndex===args.turn ? "#613414" : "transparent"
   },
-  buttonsRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonsColumn: {
-    display: "flex",
-    flexDirection: "column",
-  }
 });
 
 const Player = (props: PlayerProps) => {
-  const { bets, player, playerHand, turn, playerReady, doubleDown,
-    split, hit, stand, gameState, isDealerBJ, isPlayerBJAction } = props;
+  const { bets, player, turn, playerReady, isLastPlayer, gameState, minBet,
+    deckHook, playersHook, isDealerBJ, setTurn } = props;
   const styles = getStyles({ playerIndex: player.id, turn });
   const liveGame = gameState === "gameStarted";
-  const disableHit = liveGame && getTotalFromCards(playerHand).isBust;
-  const playerBJ = liveGame && getTotalFromCards(playerHand).isBlackJack;
-  const disableDoubleDown = playerHand?.length !== 2 || playerBJ;
+  const waitForBets = gameState === "waitForBets";
 
-  React.useEffect(() => {
-    if (player.id === turn && playerBJ) {
-      isPlayerBJAction();
+  const doubleDown = (handId: number, hand: CardType[]) => {
+    let card = deckHook.drawCards(1)[0];
+    hand.push(card);
+
+    // Applying double down bet
+    const currentBet = bets.currentBet?.(turn, handId) || 0;
+    bets.addBet?.(turn, handId, currentBet);
+
+    if (!isLastPlayer) {
+      setTurn(turn + 1);
+    } else {
+      stand(handId);
     }
-  }, [isPlayerBJAction, playerBJ, player, turn]);
+  }
 
-  const showButtons = React.useMemo(() => {
-    const liveGame = gameState === "gameStarted";
-    return liveGame && player.id === turn && !isDealerBJ && !playerBJ;
-  }, [isDealerBJ, gameState, playerBJ, player, turn]);
+  const split = (handsTurn: number, hand: CardType[]) => {
+    const newCards = deckHook.drawCards(2);
+    const firstHand = [hand[0], newCards[0]];
+    const secondHand = [hand[1], newCards[1]];
 
-  const buttonStyle = React.useCallback((doubleDown = false) => {
-    const isDoubleDown = doubleDown ? disableDoubleDown : false;
-    return (disableHit || isDoubleDown) ? styles.buttonDisabled : styles.button;
-  }, [disableDoubleDown, disableHit, styles]);
+    playersHook.addHandSplit(turn, handsTurn, [firstHand, secondHand]);
+
+    const currentBet = bets.currentBet?.(turn, 0) || 0;
+    bets.addBet?.(turn, 1, currentBet);
+  }
+
+  const hit = (handId: number) => {
+    let card = deckHook.drawCards(1)[0];
+    playersHook.addCard(player.id, handId, card);
+    const hand = playersHook.getHands(player.id)[handId];
+
+    if (getTotalFromCards([...hand, card]).isBust) {
+      console.log("BUST");
+      if (!isLastPlayer) {
+        setTurn(turn + 1);
+      } else {
+        stand(handId);
+      }
+    }
+  }
+
+  const stand = (handId: number) => {
+    const handsTotal = player.hands.length;
+    if (handId < handsTotal - 1) {
+      // pass to the next same player hand.
+    } else {
+      setTurn(turn + 1);
+    }
+  }
+
+  const isPlayerBJAction = (handId: number) => {
+    if (!isLastPlayer) {
+      setTurn(turn + 1);
+    } else {
+      stand(handId);
+    }
+  }
 
   return (
     <div style={styles.container} >
       <h1 style={styles.title}>Player {player.id+1}</h1>
       <hr />
-      <div style={styles.cardsContainer}>
-        {playerHand?.map((card: CardType, index: number) =>
-          <Card key={index} number={card.number} suit={card.suit} />
-        )}
+      {waitForBets &&
+        <PlayerBet
+          bets={bets}
+          player={player}
+          playerReady={playerReady}
+          minBet={minBet}
+        />
+      }
+      {(!waitForBets && !player.hands.length) &&
+        <div style={styles.title}>Player Ready</div>}
+      <div style={styles.handsContainer}>
+        {player.hands.map((hand, index) => (
+          <PlayerHand
+            key={index}
+            player={player}
+            bets={bets}
+            hand={hand}
+            liveGame={liveGame}
+            gameState={gameState}
+            turn={turn}
+            isDealerBJ={isDealerBJ}
+            playerReady={playerReady}
+            hit={() => hit(index)}
+            stand={() => stand(index)}
+            doubleDown={() => doubleDown(index, hand)}
+            isPlayerBJAction={() => isPlayerBJAction(index)}
+            split={() => split(index, hand)}      
+          />
+        ))}
       </div>
-      {liveGame && <Total hand={playerHand} />}
-      <hr />
-      <PlayerBet bets={bets} player={player} playerReady={playerReady} waitForBets={gameState === "waitForBets"}/>
-      <hr />
-      {showButtons && (
-        <div style={styles.buttonsRow}>
-          <div style={styles.buttonsColumn}>
-            <button disabled={disableHit} style={buttonStyle()} onClick={hit}>Hit</button>
-            <button style={buttonStyle()} onClick={stand}>Stand</button>
-          </div>
-          <div style={styles.buttonsColumn}>
-            <button disabled={disableDoubleDown} style={buttonStyle(true)} onClick={doubleDown}>Double Down</button>
-            <button disabled={true} style={styles.buttonDisabled} onClick={split}>Split</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

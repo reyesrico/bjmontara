@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-import { BetsControl, BetsType, CardType, InsuranceType, PlayersHands, ResultType } from '@/types/types';
-import { getResult } from '@/components/Result';
+import { BetResult, BetsType, CardType,
+  InsuranceType, PlayerType, ResultType } from '@/types/types';
+import { getResult } from '@/helpers/resultHelper';
 
 export const useBets = () => {
   const [bets, setBets] = useState<BetsType>({});
@@ -34,9 +35,9 @@ export const useBets = () => {
       case "dealer_blackjack":
         return insurance ? insurance * 2 : -1 * bet;
       case "blackjack":
-        return bet * 1.5;
+        return bet + (bet * 1.5);
       case "win":
-        return bet;
+        return bet + bet;
       case "lose":
         return -1 * bet;
       default:
@@ -53,23 +54,26 @@ export const useBets = () => {
   }
 
   const executeBets = (
-    playersHands: PlayersHands,
+    players: PlayerType[],
     dealerHand: CardType[],
     isDealerBJ: boolean
   ) => {
-    return Object.keys(playersHands).map(Number).map(playerId => {
+    return players.reduce((acc: BetResult[], player) => {
+      const playerId = player.id;
       const insurance = insurances
         .find(insurance => insurance.playerId === playerId)?.insurance;
-      const result =
-        getResult(dealerHand, playersHands[playerId], isDealerBJ);
+      const results = player.hands.map((hand, i) => {
+        const result = getResult(dealerHand, hand, isDealerBJ);
+        return {
+          playerId,
+          handsId: i,
+          result: resultBet(playerId, i, result.result, insurance)
+        };
+      });
 
-      const handsId = 0; // for now
-      return {
-        playerId,
-        handsId,
-        result: resultBet(playerId, 0, result.result, insurance)
-      };
-    });
+      acc = [...acc, ...results];
+      return acc;
+    }, []);
   }
 
   return {
@@ -80,5 +84,5 @@ export const useBets = () => {
     clearBets,
     currentBet,
     executeBets
-  } as BetsControl;
+  };
 }

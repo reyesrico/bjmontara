@@ -2,16 +2,36 @@
 export type GameState =
   "refreshDeck" | "waitForBets" | "playersReady" | "gameStarted" | "gameFinished" | undefined;
 
-// TODO: DELETE THIS ONE
-export type PlayersHands = Record<number, CardType[]>;
-
 // Cards
 export type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades';  
 export type Number = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K';
 export type CardType = { number: Number, suit: Suit };
 
+// Deck
+export type DeckHook = {
+  deck: CardType[];
+  deckIndexFinish: number;
+  refreshDeck: () => void;
+  drawCards: (count: number) => CardType[];
+  drawCardsForDealer: (dealerCards: CardType[]) => CardType[];
+}
+
 // Player
 export type PlayerType = { id: number, money: number, hands: CardType[][] };
+
+export type ReadyPlayers = {
+  [key: number]: boolean
+};
+
+export type PlayersHook = {
+  players: Record<number, PlayerType>;
+  addCard: (playerId: number, handIndex: number, card: CardType) => void;
+  addHands: (cards: CardType[][]) => void;
+  addHandSplit: (playerId: number, handIndex: number, newHands: CardType[][]) => void;
+  refreshPlayers: () => void;
+  clearHands: () => void;
+  getHands: (playerId: number) => CardType[][];
+}
 
 // Result
 export type ResultType = 'win' | 'lose' | 'draw' |
@@ -28,6 +48,12 @@ export type BetsType = {
   }
 };
 
+export type BetResult = {
+  playerId: number,
+  handsId: number,
+  result: number,
+};
+
 // Insurance
 export type InsuranceType = {
   playerId: number,
@@ -42,7 +68,7 @@ export type BetsControl = {
   clearBets?: () => void;
   currentBet?: (playerId: number, handsId: number) => number;
   executeBets?: (
-    playersHands: PlayersHands,
+    players: PlayerType[],
     dealerHand: CardType[],
     isDealerBJ: boolean
   ) => {

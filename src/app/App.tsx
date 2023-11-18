@@ -7,7 +7,7 @@ import BlackJackGame from '@/components/BlackJackGame';
 const App = () => {
   return (
     <div>
-      <BlackJackGame numberPlayers={3} />
+      <BlackJackGame numberPlayers={2} />
     </div>
   )
 };

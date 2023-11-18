@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 
-import { CardType, GameState, PlayerType, PlayersHands, ResultType } from '@/types/types';
+import { CardType, GameState, ReadyPlayers } from '@/types/types';
 import { getTotalFromCards } from '@/helpers/cardHelpers';
-import { useDeck } from '@/helpers/useDeck';
 import { useBets } from '@/helpers/useBets';
+import { useDeck } from '@/helpers/useDeck';
+import { usePlayers } from '@/helpers/usePlayers';
 
 import BookRecommendation from './BookRecommendation';
 import Player from './Player';
 import Result from './Result';
 import Settings from './Settings';
 import Dealer from './Dealer';
-
-type ReadyPlayers = {
-  [key: number]: boolean
-};
 
 interface BlackJackGameProps {
   numberPlayers: number;
@@ -30,7 +27,8 @@ const getStyles = () => ({
   },
   settingsContainer: {
     backgroundColor: "#7A5827",
-    width: "100%"
+    width: "100%",
+    color: "white",
   },
   playersContainer: {
     display: "flex",
@@ -47,6 +45,23 @@ const getStyles = () => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "stretch"
+  },
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#e0cdbd",
+  },
+  button: {
+    backgroundColor: "#7A5827",
+    color: "#CDA37D",
+    border: 2,
+    borderColor: "black",
+    borderStyle: "solid",
+    borderRadius: 2,
+    margin: 5,
+    padding: 5,
+    // flexGrow: 1,
   }
 } as any);
 
@@ -55,19 +70,18 @@ const BlackJackGame = (props: BlackJackGameProps) => {
   const styles = getStyles();
 
   // States
-  const [players, setPlayers] = useState<PlayerType[]>([]);
+  const playersHook = usePlayers(numberPlayers);
+  const players = playersHook.players;
   const [gameState, setGameState] = useState<GameState>(undefined);
-  const [playersHand, setPlayersHand] = useState<PlayersHands>({});
   const [dealerHand, setDealerHand] = useState<CardType[]>([]);
   const [turn, setTurn] = useState(0);
-  const [handsTurn, setHandsTurn] = useState(0);
   const [showBook, setShowBook] = useState<boolean>(true);
   const [isDealerBJ, setIsDealerBJ] = useState<boolean>(false);
   const [playersReady, setPlayersReady] = useState<ReadyPlayers>({});
+  const [minBet, setMinBet] = useState<number>(15);
 
   // Deck
-  let { deck, deckIndexFinish, refreshDeck,
-    drawCards, drawCardsForDealer } = useDeck();
+  let deckHook = useDeck();
 
   // Bets
   const bets = useBets();
@@ -87,18 +101,14 @@ const BlackJackGame = (props: BlackJackGameProps) => {
   
   const refreshAllDeck = () => {
     resetGame();
-    let newPlayers = [];
-    for (let i=0; i<numberPlayers; i++) {
-      newPlayers.push({ id: i, money: 1000, hands: [] });
-    }
-    setPlayers(newPlayers);
-    refreshDeck();
+    playersHook.refreshPlayers();
+    deckHook.refreshDeck();
     placeBets();
   }
 
   const placeBets = () => {
     bets.clearBets?.();
-    setPlayersHand({});
+    playersHook.clearHands();
     setDealerHand([]);
     setTurn(0);
     setIsDealerBJ(false);
@@ -106,52 +116,39 @@ const BlackJackGame = (props: BlackJackGameProps) => {
   }
 
   const settleBets = (nextDealerHands: CardType[]) => {
-    let playersCopy = [...players];
-    bets.executeBets?.(playersHand, nextDealerHands, isDealerBJ).forEach(bet => {
-      let player = playersCopy.find(player =>
-        player.id === bet.playerId);
+    const _players = Object.values(players);
+    bets.executeBets?.(_players, nextDealerHands, isDealerBJ).forEach(bet => {
+      let player = players[bet.playerId];
       const money = (player?.money || 0) + bet.result;
       if (player) {
         player.money = money;
       }
     });
-    setPlayers(playersCopy);
   }
 
   const startGame = () => {
     setPlayersReady({});
     setGameState("gameStarted");
-    let newPlayersHand: Record<string, CardType[]> = {};
     let newDealerHand: CardType[] = [];
 
     // Players 1st Card
-    let firstCards = drawCards(numberPlayers);
-    newPlayersHand = firstCards.reduce((acc, card, index) => {
-      return {
-        ...acc,
-        [index]: [card],
-      }
-    }, newPlayersHand);
+    let firstCards = deckHook.drawCards(numberPlayers);
   
     // Dealer 1st Card
-    let dealerCard = drawCards(1);
+    let dealerCard = deckHook.drawCards(1);
     newDealerHand.push(dealerCard[0]);
 
     // Players 2nd Card
-    let secondCards = drawCards(numberPlayers);
-    newPlayersHand = secondCards.reduce((acc, card, index) => {
-      return {
-        ...acc,
-        [index]: [...acc[index], card],
-      }
-    }, newPlayersHand);
+    let playersCards = deckHook.drawCards(numberPlayers).map((card, i) => (
+      [firstCards[i], card]
+    ));
   
     // Dealer 2nd Card
-    let dealerSecondCard = drawCards(1);
+    let dealerSecondCard = deckHook.drawCards(1);
     newDealerHand.push(dealerSecondCard[0]);
     const dealerBJ = getTotalFromCards(newDealerHand).isBlackJack;
     setIsDealerBJ(dealerBJ);
-    setPlayersHand(newPlayersHand);
+    playersHook.addHands(playersCards);
     setDealerHand(newDealerHand);
   
     if (dealerBJ) {
@@ -159,75 +156,19 @@ const BlackJackGame = (props: BlackJackGameProps) => {
     }
   }
 
-  const doubleDown = () => {
-    const handsId = 0;
-    let playerHand = playersHand[turn];
-    let card = drawCards(1)[handsId];
-    playerHand.push(card);
-    setPlayersHand({
-      ...playersHand,
-      [turn]: playerHand,
-    });
+  const dealerPlay = () => {
+    // Hitting dealers hand until 17 is reached
+    const nextDealerCards = deckHook.drawCardsForDealer(dealerHand);
+    setDealerHand(nextDealerCards);
+  
+    // Calculating results
+    settleBets(nextDealerCards);
 
-    // Applying double down bet
-    const currentBet = bets.currentBet?.(turn, handsId) || 0;
-    bets.addBet?.(turn, handsId, currentBet);
-
-    if (turn < players.length-1) {
-      setTurn(turn + 1);
+    // ...reset game...
+    if (deckHook.deckIndexFinish > deckHook.deck.length) {
+      setGameState(undefined);
     } else {
-      stand();
-    }
-  }
-
-  const split = () => {
-    let playerHand = playersHand[turn];
-    
-    const firstHand = [playerHand[0], drawCards(1)[0]];
-    const secondHand = [playerHand[1], drawCards(1)[0]];
-
-    const player = players.filter(player => player.id === turn)[0];
-    player.hands = [firstHand, secondHand];
-
-    const currentBet = bets.currentBet?.(turn, 0) || 0;
-    bets.addBet?.(turn, 1, currentBet);
-  }
-
-  const hit = () => {
-    let playerHand = playersHand[turn];
-    let card = drawCards(1)[0];
-    playerHand.push(card);
-    setPlayersHand({
-      ...playersHand,
-      [turn]: playerHand,
-    });
-
-    if (getTotalFromCards(playerHand).isBust) {
-      if (turn < players.length-1) {
-        setTurn(turn + 1);
-      } else {
-        stand();
-      }
-    }
-  }
-
-  const stand = async () => {
-    if (turn < numberPlayers-1) {
-      setTurn(turn + 1);
-    } else {
-      // Hitting dealers hand until 17 is reached
-      const nextDealerCards = drawCardsForDealer(dealerHand);
-      setDealerHand(nextDealerCards);
-    
-      // Calculating results
-      settleBets(nextDealerCards);
-
-      // ...reset game...
-      if (deckIndexFinish > deck.length) {
-        setGameState(undefined);
-      } else {
-        resetGame();
-      }
+      resetGame();
     }
   }
 
@@ -237,8 +178,10 @@ const BlackJackGame = (props: BlackJackGameProps) => {
         <Settings
           showBook={showBook}
           setShowBook={(val) => setShowBook(val)}
-          cardsInDeck={deck.length}
-          indexFinish={deckIndexFinish}
+          cardsInDeck={deckHook.deck.length}
+          indexFinish={deckHook.deckIndexFinish}
+          minBet={minBet}
+          setMinBet={setMinBet}
         />
       </div>
       <hr />
@@ -246,42 +189,41 @@ const BlackJackGame = (props: BlackJackGameProps) => {
         <Dealer dealerHand={dealerHand} gameState={gameState} />
       }
       <div style={styles.playersContainer}>
-        {players.map((player, index) => (
+        {Object.values(players).map((player, index) => (
           <div key={index} style={styles.playerContainer}>
             <Player
               player={player}
-              playerHand={playersHand[player.id]}
+              playersHook={playersHook}
+              deckHook={deckHook}
+              isLastPlayer={turn < Object.keys(players).length - 1}
+              minBet={minBet}
               bets={bets}
               turn={turn}
-              hit={hit}
-              stand={stand}
-              doubleDown={doubleDown}
-              split={split}
               gameState={gameState}
               isDealerBJ={isDealerBJ}
-              isPlayerBJAction={() => {
-                if (turn < players.length-1) {
-                  setTurn(turn + 1);
-                } else {
-                  stand();
-                }
-              }}
               playerReady={() => {
                 setPlayersReady({
                   ...playersReady,
                   [player.id]: true,
                 });
+              } }
+              setTurn={(_turn) => {
+                if (_turn === numberPlayers) {
+                  dealerPlay();
+                } else {
+                  setTurn(_turn);
+                }
               }}
             />
             {showBook && turn === player.id &&
              gameState === 'gameStarted' && <BookRecommendation
               dealerCard={dealerHand[0]}
-              playerCards={playersHand[player.id]}
+              playerCards={players[player.id].hands[0]}
             />}
             {gameState === 'gameFinished' &&
               <Result
                 dealerHand={dealerHand}
-                playerHand={playersHand[player.id]}
+                playerHand={players[player.id].hands[0]}
                 isDealerBJ={isDealerBJ}
               />
             }
@@ -289,9 +231,14 @@ const BlackJackGame = (props: BlackJackGameProps) => {
         )}
       </div>
       <hr />
-      {(!gameState || gameState === 'gameFinished') && <button onClick={refreshAllDeck}>Refresh Deck</button>}
-      {gameState === 'gameFinished' && <button onClick={placeBets}>Place Bets</button>}
-      {gameState === 'playersReady' && <button onClick={startGame}>Start Game</button>}
+      <div style={styles.buttonsContainer}>
+        {(!gameState || gameState === 'gameFinished') &&
+          <button style={styles.button} onClick={refreshAllDeck}>Refresh Deck</button>}
+        {gameState === 'gameFinished' && 
+          <button style={styles.button} onClick={placeBets}>Place Bets</button>}
+        {gameState === 'playersReady' &&
+          <button style={styles.button} onClick={startGame}>Start Game</button>}
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ const getStyles = () => ({
     justifyContent: "center",
     flexDirection: "column",
     alignItems: "center",
-    // height: 200,
+    height: 200,
   },
   dealersCardsContainer: {
     background: "#b08258",
