@@ -38,7 +38,7 @@ export type ResultType = 'win' | 'lose' | 'draw' |
   'blackjack' | 'dealer_blackjack' | undefined;
 
 // Chip
-export const chipTypes = [0.5, 1, 5, 25, 100, 500, 1000] as const;
+export const chipTypes = [1, 5, 15, 25, 100, 500, 1000] as const;
 export type ChipType = typeof chipTypes[number];
 
 // Bets
@@ -52,6 +52,10 @@ export type BetResult = {
   playerId: number,
   handsId: number,
   result: number,
+};
+
+export type LastBet = {
+  [key: number]: number;         // playerId -> bet
 };
 
 // Insurance
@@ -76,4 +80,5 @@ export type BetsControl = {
     handsId: number;
     result: number;
   }[];
+  lastBets: LastBet;
 };

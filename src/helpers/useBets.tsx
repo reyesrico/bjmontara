@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
 import { BetResult, BetsType, CardType,
-  InsuranceType, PlayerType, ResultType } from '@/types/types';
+  InsuranceType, LastBet, PlayerType, ResultType } from '@/types/types';
 import { getResult } from '@/helpers/resultHelper';
 
 export const useBets = () => {
   const [bets, setBets] = useState<BetsType>({});
   const [insurances, setInsurances] = useState<InsuranceType[]>([]);
+  const [lastBets, setLastBets] = useState<LastBet>({});
 
   const addInsurance = (playerId: number, insurance: number) => {
     setInsurances([...insurances, { playerId, insurance }]);
@@ -31,6 +32,8 @@ export const useBets = () => {
   const resultBet = (playerId: number, handsId: number,
     result: ResultType, insurance=0) => {
     const bet = bets[playerId]?.[handsId] || 0;
+    setLastBets({...lastBets, [playerId]: bet});
+    console.log({ lastBets, aqui: "aqui" });
     switch(result) {
       case "dealer_blackjack":
         return insurance ? insurance * 2 : -1 * bet;
@@ -83,6 +86,7 @@ export const useBets = () => {
     resultBet,
     clearBets,
     currentBet,
-    executeBets
+    executeBets,
+    lastBets,
   };
 }

@@ -8,7 +8,6 @@ import { usePlayers } from '@/helpers/usePlayers';
 
 import BookRecommendation from './BookRecommendation';
 import Player from './Player';
-import Result from './Result';
 import Settings from './Settings';
 import Dealer from './Dealer';
 
@@ -189,46 +188,46 @@ const BlackJackGame = (props: BlackJackGameProps) => {
         <Dealer dealerHand={dealerHand} gameState={gameState} />
       }
       <div style={styles.playersContainer}>
-        {Object.values(players).map((player, index) => (
-          <div key={index} style={styles.playerContainer}>
-            <Player
-              player={player}
-              playersHook={playersHook}
-              deckHook={deckHook}
-              isLastPlayer={turn < Object.keys(players).length - 1}
-              minBet={minBet}
-              bets={bets}
-              turn={turn}
-              gameState={gameState}
-              isDealerBJ={isDealerBJ}
-              playerReady={() => {
-                setPlayersReady({
-                  ...playersReady,
-                  [player.id]: true,
-                });
-              } }
-              setTurn={(_turn) => {
-                if (_turn === numberPlayers) {
-                  dealerPlay();
-                } else {
-                  setTurn(_turn);
+        {Object.values(players).map((player, index) => {
+          if (player.money > 0) {
+            return (
+              <div key={index} style={styles.playerContainer}>
+                <Player
+                  player={player}
+                  playersHook={playersHook}
+                  deckHook={deckHook}
+                  isLastPlayer={turn < Object.keys(players).length - 1}
+                  minBet={minBet}
+                  bets={bets}
+                  turn={turn}
+                  gameState={gameState}
+                  isDealerBJ={isDealerBJ}
+                  dealerHand={dealerHand}
+                  playerReady={() => {
+                    setPlayersReady({
+                      ...playersReady,
+                      [player.id]: true,
+                    });
+                  } }
+                  setTurn={(_turn) => {
+                    if (_turn === numberPlayers) {
+                      dealerPlay();
+                    } else {
+                      setTurn(_turn);
+                    }
+                  }}
+                />
+                {showBook && turn === player.id &&
+                  gameState === 'gameStarted' &&
+                  <BookRecommendation
+                    dealerCard={dealerHand[0]}
+                    playerCards={players[player.id].hands[0]}
+                  />
                 }
-              }}
-            />
-            {showBook && turn === player.id &&
-             gameState === 'gameStarted' && <BookRecommendation
-              dealerCard={dealerHand[0]}
-              playerCards={players[player.id].hands[0]}
-            />}
-            {gameState === 'gameFinished' &&
-              <Result
-                dealerHand={dealerHand}
-                playerHand={players[player.id].hands[0]}
-                isDealerBJ={isDealerBJ}
-              />
-            }
-          </div>)
-        )}
+              </div>
+            );
+          }
+        })}
       </div>
       <hr />
       <div style={styles.buttonsContainer}>

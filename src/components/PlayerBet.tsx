@@ -89,6 +89,7 @@ const PlayerBet = (props: PlayerBetProps) => {
     <div style={styles.container}>
       <div>Money: {player.money}</div>
       <div>Current Bet: {bets.currentBet?.(player.id, 0)}</div>
+      <div>Last Bet: {bets.lastBets[player.id]}</div>
       {error && <div style={styles.error}>{error}</div>}
       <hr />
       <>

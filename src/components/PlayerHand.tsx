@@ -10,6 +10,12 @@ const getStyles = (args: {
   playerIndex: number,
   turn: number 
 }): any => ({
+  container: {
+    margin: 4,
+    padding: 8,
+    border: "1px solid black",
+    borderShadow: "2px 2px 2px black",
+  },
   button: {
     backgroundColor: "#61AFD5",
     color: "black",
@@ -63,7 +69,7 @@ interface PlayerHandProps {
 }
 
 const PlayerHand = (props: PlayerHandProps) => {
-  const { player, hand, liveGame, gameState, isDealerBJ, key,
+  const { player, hand, liveGame, gameState, isDealerBJ, bets, key,
     turn, hit, stand, doubleDown, split, isPlayerBJAction } = props;
 
   const styles = getStyles({ playerIndex: player.id, turn });
@@ -99,13 +105,15 @@ const PlayerHand = (props: PlayerHandProps) => {
   }, [enableSplit, styles]);
 
   return (
-    <div>
+    <div style={styles.container}>
       <div style={styles.cardsContainer}>
         {hand?.map((card: CardType, index: number) =>
           <Card key={index} number={card.number} suit={card.suit} />
         )}
       </div>
       {liveGame && <Total hand={hand} />}
+      <div>Money: {player.money}</div>
+      <div>Current Bet: {bets.currentBet?.(player.id, key || 0)}</div>
       <hr />
       {showButtons && (
         <div style={styles.buttonsRow}>

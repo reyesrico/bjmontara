@@ -1,8 +1,10 @@
 import React from 'react';
 
-import { BetsControl, CardType, GameState, PlayersHook, PlayerType } from '@/types/types';
 import PlayerHand from './PlayerHand';
 import PlayerBet from './PlayerBet';
+import Result from './Result';
+
+import { BetsControl, CardType, GameState, PlayersHook, PlayerType } from '@/types/types';
 import { getTotalFromCards } from '@/helpers/cardHelpers';
 
 interface PlayerProps {
@@ -17,6 +19,7 @@ interface PlayerProps {
   playersHook: PlayersHook;
   setTurn: (turn: number) => void;
   minBet: number;
+  dealerHand: CardType[];
 }
 
 const getStyles = (args: {
@@ -35,11 +38,15 @@ const getStyles = (args: {
     display: "flex",
     flexDirection: "row",
   },
+  handContainer: {
+    display: "flex",
+    flexDirection: "column",
+  }
 });
 
 const Player = (props: PlayerProps) => {
   const { bets, player, turn, playerReady, isLastPlayer, gameState, minBet,
-    deckHook, playersHook, isDealerBJ, setTurn } = props;
+    dealerHand, deckHook, playersHook, isDealerBJ, setTurn } = props;
   const styles = getStyles({ playerIndex: player.id, turn });
   const liveGame = gameState === "gameStarted";
   const waitForBets = gameState === "waitForBets";
@@ -118,22 +125,31 @@ const Player = (props: PlayerProps) => {
         <div style={styles.title}>Player Ready</div>}
       <div style={styles.handsContainer}>
         {player.hands.map((hand, index) => (
-          <PlayerHand
-            key={index}
-            player={player}
-            bets={bets}
-            hand={hand}
-            liveGame={liveGame}
-            gameState={gameState}
-            turn={turn}
-            isDealerBJ={isDealerBJ}
-            playerReady={playerReady}
-            hit={() => hit(index)}
-            stand={() => stand(index)}
-            doubleDown={() => doubleDown(index, hand)}
-            isPlayerBJAction={() => isPlayerBJAction(index)}
-            split={() => split(index, hand)}      
-          />
+          <div key={index} style={styles.handContainer}>
+            <PlayerHand
+              key={index}
+              player={player}
+              bets={bets}
+              hand={hand}
+              liveGame={liveGame}
+              gameState={gameState}
+              turn={turn}
+              isDealerBJ={isDealerBJ}
+              playerReady={playerReady}
+              hit={() => hit(index)}
+              stand={() => stand(index)}
+              doubleDown={() => doubleDown(index, hand)}
+              isPlayerBJAction={() => isPlayerBJAction(index)}
+              split={() => split(index, hand)}      
+            />
+            {gameState === 'gameFinished' &&
+              <Result
+                dealerHand={dealerHand}
+                playerHand={hand}
+                isDealerBJ={isDealerBJ}
+              />
+            }
+          </div>
         ))}
       </div>
     </div>
