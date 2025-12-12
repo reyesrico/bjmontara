@@ -16,9 +16,9 @@ const Toggle = ({ toggled, onClick }: ToggleProps) => {
   }
 
   return (
-    <label>
-      <input type="checkbox" defaultChecked={isToggled} onClick={callback} />
-      <span />
+    <label className="toggle-label">
+      <input className="toggle-input" type="checkbox" defaultChecked={isToggled} onClick={callback} />
+      <span className="toggle-slider" />
     </label>
   );
 };

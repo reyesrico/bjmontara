@@ -8,23 +8,16 @@ interface BookRecommendationProps {
   playerCards: CardType[];
 }
 
-const getStyles = () => ({
-  text: {
-    backgroundColor: "#CDA37D",
-    color: "#6A3A1C",
-  }
-});
-
 const BookRecommendation = (props: BookRecommendationProps) => {
   const { dealerCard, playerCards } = props;
   const book = getBook(dealerCard, playerCards);
-  const styles = getStyles();
 
   if (!book) return <></>;
 
   return (
-    <div style={styles.text}>
-      Reco: {book}
+    <div className="bj-recommendation">
+      <div className="bj-recommendation-title">📖 Strategy Guide</div>
+      <div>Recommended: {book}</div>
     </div>);
 };
 

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 
 import { BetResult, BetsType, CardType,
-  InsuranceType, LastBet, PlayerType, ResultType } from '@/types/types';
+  InsuranceType, LastBet, LastResult, PlayerType, ResultType } from '@/types/types';
 import { getResult } from '@/helpers/resultHelper';
 
 export const useBets = () => {
   const [bets, setBets] = useState<BetsType>({});
   const [insurances, setInsurances] = useState<InsuranceType[]>([]);
   const [lastBets, setLastBets] = useState<LastBet>({});
+  const [lastResults, setLastResults] = useState<LastResult>({});
 
   const addInsurance = (playerId: number, insurance: number) => {
     setInsurances([...insurances, { playerId, insurance }]);
@@ -32,7 +33,53 @@ export const useBets = () => {
   const resultBet = (playerId: number, handsId: number,
     result: ResultType, insurance=0) => {
     const bet = bets[playerId]?.[handsId] || 0;
-    setLastBets({...lastBets, [playerId]: bet});
+    
+    // Only set lastBet for the first hand (original bet before any splits)
+    if (handsId === 0) {
+      setLastBets(prev => ({...prev, [playerId]: bet}));
+    }
+    
+    // Track result status
+    let resultStatus: 'Won' | 'Lost' | 'Tied';
+    switch(result) {
+      case "dealer_blackjack":
+        resultStatus = insurance ? 'Tied' : 'Lost';
+        break;
+      case "blackjack":
+      case "win":
+        resultStatus = 'Won';
+        break;
+      case "lose":
+        resultStatus = 'Lost';
+        break;
+      default:
+        resultStatus = 'Tied';
+    }
+    
+    // Aggregate results across all hands for this player
+    setLastResults(prev => {
+      // If this is the first hand, set the result
+      // If player has multiple hands, prioritize Won > Tied > Lost
+      if (handsId === 0) {
+        const updated = {...prev, [playerId]: resultStatus};
+        console.log('Setting lastResults for player', playerId, ':', resultStatus, 'Updated state:', updated);
+        return updated;
+      } else {
+        // For subsequent hands, update only if current result is "better"
+        const currentResult = prev[playerId];
+        let newResult = currentResult;
+        
+        if (resultStatus === 'Won' || currentResult === 'Lost' || 
+            (resultStatus === 'Tied' && currentResult !== 'Won')) {
+          newResult = resultStatus;
+        }
+        
+        const updated = {...prev, [playerId]: newResult};
+        console.log('Updating lastResults for player', playerId, 'hand', handsId, ':', resultStatus, '-> keeping', newResult);
+        return updated;
+      }
+    });
+    
     console.log({ lastBets, aqui: "aqui" });
     switch(result) {
       case "dealer_blackjack":
@@ -88,5 +135,6 @@ export const useBets = () => {
     currentBet,
     executeBets,
     lastBets,
+    lastResults,
   };
 }

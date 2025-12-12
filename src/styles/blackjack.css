@@ -1,0 +1,543 @@
+/* 
+ * Blackjack Game Styles
+ * Based on traditional casino blackjack table aesthetics
+ * 
+ * Color Palette:
+ * - Table Felt: #0B6623 (Forest Green - traditional casino felt)
+ * - Table Edge: #8B4513 (Saddle Brown - wood edge)
+ * - Accent Gold: #D4AF37 (Casino gold trim)
+ * - Dealer Area: #084D1C (Darker green)
+ * - Text Primary: #FFFFFF (White for contrast)
+ * - Text Secondary: #FFD700 (Gold text)
+ * - Card Shadow: rgba(0, 0, 0, 0.3)
+ * - Winning Green: #00C853
+ * - Losing Red: #D32F2F
+ * - Chip Colors: Blue (#2196F3), Red (#F44336), Green (#4CAF50), Black (#212121)
+ */
+
+:root {
+  --felt-green: #0B6623;
+  --felt-dark: #084D1C;
+  --table-edge: #8B4513;
+  --wood-dark: #5D2E0F;
+  --gold-accent: #D4AF37;
+  --gold-bright: #FFD700;
+  --text-white: #FFFFFF;
+  --text-gold: #FFD700;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --win-green: #00C853;
+  --lose-red: #D32F2F;
+  --chip-blue: #2196F3;
+  --chip-red: #F44336;
+  --chip-green: #4CAF50;
+  --chip-black: #212121;
+  --overlay-dark: rgba(0, 0, 0, 0.5);
+  --transition-speed: 0.3s;
+}
+
+/* Main Game Container */
+.bj-game-container {
+  background: linear-gradient(135deg, var(--table-edge) 0%, var(--wood-dark) 100%);
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+  font-family: 'Arial', 'Helvetica', sans-serif;
+}
+
+/* Table Surface */
+.bj-table {
+  background: radial-gradient(ellipse at center, var(--felt-green) 0%, var(--felt-dark) 100%);
+  border: 6px solid var(--table-edge);
+  border-radius: 150px;
+  box-shadow: 
+    inset 0 0 40px rgba(0, 0, 0, 0.4),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  flex: 1;
+  position: relative;
+}
+
+/* Settings Bar */
+.bj-settings {
+  background: linear-gradient(180deg, rgba(93, 46, 15, 0.95) 0%, rgba(139, 69, 19, 0.95) 100%);
+  border: 2px solid var(--gold-accent);
+  border-radius: 6px;
+  padding: 6px 15px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  color: var(--text-gold);
+  font-size: 12px;
+  position: relative;
+  z-index: 5;
+}
+
+.bj-settings-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.bj-settings-button {
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold-accent) 100%);
+  color: var(--table-edge);
+  border: 2px solid var(--gold-bright);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  min-width: 30px;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bj-settings-button:hover {
+  background: var(--gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Dealer Area */
+.bj-dealer-area {
+  background: linear-gradient(180deg, var(--felt-dark) 0%, var(--felt-green) 100%);
+  border: 2px solid var(--gold-accent);
+  border-radius: 12px;
+  padding: 8px;
+  margin: 0 auto 15px;
+  max-width: 800px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.bj-dealer-title {
+  color: var(--text-gold);
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0 0 8px 0;
+  letter-spacing: 1px;
+}
+
+.bj-dealer-cards {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Player Area */
+.bj-players-area {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.bj-player-spot {
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+  border: 2px dashed var(--gold-accent);
+  border-radius: 12px;
+  padding: 4px;
+  min-width: 240px;
+  max-width: 300px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: all var(--transition-speed);
+}
+
+.bj-player-spot.active {
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+  border-style: solid;
+  border-width: 4px;
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.4),
+    inset 0 0 30px rgba(255, 215, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+.bj-player-name {
+  color: var(--text-gold);
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.7);
+}
+
+.bj-player-money {
+  color: var(--win-green);
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Card Styles */
+.bj-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 
+    0 4px 8px var(--card-shadow),
+    0 0 2px rgba(0, 0, 0, 0.5);
+  transition: transform var(--transition-speed);
+  overflow: hidden;
+}
+
+.bj-card:hover {
+  transform: translateY(-5px);
+}
+
+.bj-hand-container {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 120px;
+  align-items: center;
+}
+
+/* Chip/Bet Area */
+.bj-bet-area {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--gold-accent);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px auto;
+  color: var(--text-gold);
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.bj-chip {
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+  color: white;
+  border: 3px solid white;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform var(--transition-speed);
+}
+
+.bj-chip:hover {
+  transform: scale(1.1);
+}
+
+.bj-chip-blue { background: var(--chip-blue); }
+.bj-chip-red { background: var(--chip-red); }
+.bj-chip-green { background: var(--chip-green); }
+.bj-chip-black { background: var(--chip-black); }
+
+/* Action Buttons */
+.bj-action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bj-button {
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold-accent) 100%);
+  color: var(--table-edge);
+  border: 2px solid var(--wood-dark);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bj-button:hover {
+  background: linear-gradient(180deg, #FFE44D 0%, var(--gold-bright) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bj-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bj-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bj-button-primary {
+  background: linear-gradient(180deg, var(--win-green) 0%, #00A344 100%);
+  color: white;
+}
+
+.bj-button-danger {
+  background: linear-gradient(180deg, var(--lose-red) 0%, #B71C1C 100%);
+  color: white;
+}
+
+/* Game Controls Bar */
+.bj-controls {
+  background: linear-gradient(180deg, var(--wood-dark) 0%, var(--table-edge) 100%);
+  border: 2px solid var(--gold-accent);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+/* Total Display */
+.bj-total {
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-gold);
+  border: 2px solid var(--gold-accent);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  margin: 5px auto;
+  min-width: 80px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.bj-total-bust {
+  background: rgba(211, 47, 47, 0.3);
+  border-color: var(--lose-red);
+  color: var(--lose-red);
+}
+
+.bj-total-blackjack {
+  background: rgba(0, 200, 83, 0.3);
+  border-color: var(--win-green);
+  color: var(--win-green);
+  animation: pulse 1s infinite;
+}
+
+/* Result Display */
+.bj-result {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 12px 24px;
+  border: 3px solid var(--gold-accent);
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 100;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+  animation: slideIn var(--transition-speed);
+}
+
+.bj-result-win {
+  border-color: var(--win-green);
+  color: var(--win-green);
+}
+
+.bj-result-lose {
+  border-color: var(--lose-red);
+  color: var(--lose-red);
+}
+
+.bj-result-push {
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+/* Recommendation Display */
+.bj-recommendation {
+  background: linear-gradient(135deg, rgba(13, 71, 161, 0.95) 0%, rgba(21, 101, 192, 0.95) 100%);
+  border: 2px solid var(--gold-accent);
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  margin: 5px 0;
+}
+
+.bj-recommendation-title {
+  color: var(--text-gold);
+  font-size: 12px;
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Card Counter Display */
+.bj-card-counter {
+  background: linear-gradient(135deg, rgba(45, 80, 22, 0.95) 0%, rgba(26, 58, 14, 0.95) 100%);
+  border: 2px solid var(--win-green);
+  color: #90EE90;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin: 5px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.bj-card-counter-title {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: var(--win-green);
+}
+
+.bj-card-counter-stat {
+  margin: 3px 0;
+  font-size: 10px;
+}
+
+.bj-card-counter-recommendation {
+  font-style: italic;
+  margin-top: 4px;
+  color: #B8F5B8;
+  font-size: 9px;
+}
+
+/* Divider */
+.bj-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-accent) 50%, transparent 100%);
+  margin: 10px 0;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bj-game-container {
+    padding: 10px;
+  }
+
+  .bj-table {
+    border-width: 8px;
+    border-radius: 100px;
+    padding: 15px;
+  }
+
+  .bj-settings {
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .bj-players-area {
+    flex-direction: column;
+  }
+
+  .bj-player-spot {
+    min-width: auto;
+    max-width: 100%;
+  }
+
+  .bj-button {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .bj-dealer-title {
+    font-size: 20px;
+  }
+}
+
+/* Toggle Switch (for recommendations) */
+.bj-toggle {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background var(--transition-speed);
+  border: 2px solid var(--gold-accent);
+}
+
+.bj-toggle.active {
+  background: var(--win-green);
+}
+
+.bj-toggle-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--transition-speed);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bj-toggle.active .bj-toggle-slider {
+  transform: translateX(30px);
+}

@@ -9,44 +9,9 @@ interface PlayerBetProps {
   minBet: number;
 };
 
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column" as const,
-    width: 200
-  },
-  betsContainer: {
-    display: "flex",
-    flexDirection: "column" as const,
-    border: "1px solid black"
-  },
-  buttonsContainer: {
-    display: "flex",
-    flexDirection: "row" as const,
-    justifyContent: "space-between" as const,
-    borderBottom: "2px solid black",
-    padding: 4
-  },
-  button: {
-    backgroundColor: "#61AFD5",
-    color: "black",
-    height: 50,
-    padding: 4,
-    border: "1px black solid",
-    width: "35%",
-  },
-  error: {
-    color: "red",
-    backgroundColor: "#f7d7dc",
-    width: "100%",
-    border: "1px solid red",
-  }
-};
-
 const PlayerBet = (props: PlayerBetProps) => {
   const { bets, player, playerReady, minBet } = props;
   const [betDone, setBetDone] = React.useState(false);
-  const [buttonClicked, setButtonClicked] = React.useState("");
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -59,66 +24,89 @@ const PlayerBet = (props: PlayerBetProps) => {
     if (bet >= minBet) {
       setError("");
       setBetDone(true);
-      setButtonClicked("");
       playerReady();  
     } else {
-      setError("Bet must be greater than or equal to the minimum bet");
+      setError(`Bet must be at least $${minBet}`);
     }
   }
 
   const buttonText = React.useMemo(() => {
-    return betDone ? "Player Ready!" : "Deal"
+    return betDone ? "✓ Ready!" : "Deal Cards"
   }, [betDone]);
-
-  const buttonsStyle = React.useMemo(() => ({
-    ...styles.betsContainer,
-    backgroundColor: betDone ? "lavender" : "transparent"
-  }), [betDone]);
 
   const add = (chip: number) => {
     bets.addBet?.(player.id, 0, chip);
-    setButtonClicked(`a-${chip}`);
   };
 
   const remove = (chip: number) => {
     bets.removeBet?.(player.id, 0, chip);
-    setButtonClicked(`r-${chip}`);
   }
 
+  // Debug logging
+  console.log(`PlayerBet - Player ${player.id + 1}:`, {
+    lastBet: bets.lastBets[player.id],
+    lastResult: bets.lastResults?.[player.id],
+    hasLastBet: bets.lastBets[player.id] !== undefined,
+    hasLastResult: !!bets.lastResults?.[player.id]
+  });
+
   return (
-    <div style={styles.container}>
-      <div>Money: {player.money}</div>
-      <div>Current Bet: {bets.currentBet?.(player.id, 0)}</div>
-      <div>Last Bet: {bets.lastBets[player.id]}</div>
-      {error && <div style={styles.error}>{error}</div>}
-      <hr />
-      <>
-        <div style={buttonsStyle}>
-          {chipTypes.map(((chip, i) => {
-            return (
-              <div key={i} style={styles.buttonsContainer}>
-                <button disabled={betDone} onClick={() => add(chip)}
-                  style={{
-                    ...styles.button,
-                    backgroundColor: buttonClicked === `a-${chip}` ? "#390072" : "#61AFD5",
-                    color: buttonClicked === `a-${chip}` ? "white" : "black"
-                  }} >
-                  +{chip}
-                </button>
-                <button disabled={betDone} onClick={() => remove(chip)}
-                  style={{
-                    ...styles.button,
-                    backgroundColor: buttonClicked === `r-${chip}` ? "#390072" : "#61AFD5",
-                    color: buttonClicked === `r-${chip}` ? "white" : "black"
-                  }} >
-                  -{chip}
-                </button>
-              </div>
-            );
-          }))}
+    <div>
+      <div className="bj-player-name">Player {player.id + 1}</div>
+      <div className="bj-player-money">💰 ${player.money}</div>
+      {bets.lastBets[player.id] > 0 && bets.lastResults?.[player.id] && (
+        <div style={{
+          textAlign: 'center',
+          fontSize: '11px',
+          margin: '5px 0',
+          padding: '3px 8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderRadius: '4px',
+          color: '#FFD700'
+        }}>
+          Last Bet: ${bets.lastBets[player.id]} /
+          <span style={{ 
+            color: bets.lastResults[player.id] === 'Won' ? '#00C853' : 
+                   bets.lastResults[player.id] === 'Lost' ? '#D32F2F' : '#FFD700',
+            fontWeight: 'bold',
+            marginLeft: '4px'
+          }}>
+            {bets.lastResults[player.id]}
+          </span>
         </div>
-        <button onClick={deal}>{buttonText}</button>
-      </>
+      )}
+      <div className="bj-bet-area">${bets.currentBet?.(player.id, 0) || 0}</div>
+      {error && <div style={{ color: '#D32F2F', backgroundColor: 'rgba(211, 47, 47, 0.1)', padding: '8px', borderRadius: '5px', margin: '10px 0', textAlign: 'center', fontSize: '12px' }}>{error}</div>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', margin: '15px 0' }}>
+        {chipTypes.map((chip, i) => (
+          <div key={i} style={{ display: 'flex', gap: '5px' }}>
+            <button 
+              disabled={betDone} 
+              className="bj-button" 
+              style={{ padding: '8px 12px', fontSize: '14px' }}
+              onClick={() => add(chip)}
+            >
+              +${chip}
+            </button>
+            <button 
+              disabled={betDone} 
+              className="bj-button bj-button-danger" 
+              style={{ padding: '8px 12px', fontSize: '14px' }}
+              onClick={() => remove(chip)}
+            >
+              -${chip}
+            </button>
+          </div>
+        ))}
+      </div>
+      <button 
+        className={`bj-button ${!betDone ? 'bj-button-primary' : ''}`}
+        style={{ width: '100%', marginTop: '10px' }}
+        onClick={deal}
+        disabled={betDone}
+      >
+        {buttonText}
+      </button>
     </div>
   );
 };

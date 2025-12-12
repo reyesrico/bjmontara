@@ -19,7 +19,7 @@ const Card: React.FC<CardProps> = (props: CardProps) => {
   const height = hideCard ? 170 : 160;
 
   return (
-    <div style={{ border: "1px black solid" }}>
+    <div className="bj-card">
       <Image
         src={cardImage}
         alt={`${number} of ${suit}`}

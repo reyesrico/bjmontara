@@ -6,51 +6,6 @@ import Total from "./Total";
 import { BetsControl, CardType, GameState, PlayerType } from "@/types/types";
 import { getTotalFromCards } from "@/helpers/cardHelpers";
 
-const getStyles = (args: {
-  playerIndex: number,
-  turn: number 
-}): any => ({
-  container: {
-    margin: 4,
-    padding: 8,
-    border: "1px solid black",
-    borderShadow: "2px 2px 2px black",
-  },
-  button: {
-    backgroundColor: "#61AFD5",
-    color: "black",
-    width: 100,
-    height: 50,
-    padding: 4,
-    border: "1px black solid",
-    margin: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: "lightgrey",
-    color: "black",
-    width: 100,
-    height: 50,
-    padding: 4,
-    border: "1px black solid",
-    margin: 4,
-  },
-  cardsContainer: {
-    display: "flex",
-    flexDirection: "row",
-    backgroundColor: args.playerIndex===args.turn ? "#613414" : "transparent"
-  },
-  buttonsRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonsColumn: {
-    display: "flex",
-    flexDirection: "column",
-  }
-});
-
 interface PlayerHandProps {
   key: number;
   player: PlayerType;
@@ -72,7 +27,6 @@ const PlayerHand = (props: PlayerHandProps) => {
   const { player, hand, liveGame, gameState, isDealerBJ, bets, key,
     turn, hit, stand, doubleDown, split, isPlayerBJAction } = props;
 
-  const styles = getStyles({ playerIndex: player.id, turn });
   const disableHit = liveGame && getTotalFromCards(hand).isBust;
   const playerBJ = liveGame && getTotalFromCards(hand).isBlackJack;
   const disableDoubleDown = hand?.length !== 2 || playerBJ;
@@ -92,43 +46,48 @@ const PlayerHand = (props: PlayerHandProps) => {
     return !isDealerBJ && hand[0].number === hand[1].number;
   }, [hand, isDealerBJ]);
 
-  const buttonHitStyle = React.useMemo(() => {
-    return disableHit ? styles.buttonDisabled : styles.button;
-  }, [disableHit, styles]);
-
-  const buttonDoubleDownStyle = React.useMemo(() => {
-    return disableDoubleDown ? styles.buttonDisabled : styles.button;
-  }, [disableDoubleDown, styles]);
-
-  const buttonSplitStyle = React.useMemo(() => {
-    return enableSplit ? styles.button : styles.buttonDisabled;
-  }, [enableSplit, styles]);
-
   return (
-    <div style={styles.container}>
-      <div style={styles.cardsContainer}>
+    <div>
+      <div className="bj-player-name">Player {player.id + 1}</div>
+      <div className="bj-player-money">💰 ${player.money}</div>
+      {bets.lastBets[player.id] !== undefined && bets.lastResults?.[player.id] && (
+        <div style={{
+          textAlign: 'center',
+          fontSize: '11px',
+          margin: '5px 0',
+          padding: '3px 8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderRadius: '4px',
+          color: '#FFD700'
+        }}>
+          Last Bet: ${bets.lastBets[player.id]} /
+          <span style={{ 
+            color: bets.lastResults[player.id] === 'Won' ? '#00C853' : 
+                   bets.lastResults[player.id] === 'Lost' ? '#D32F2F' : '#FFD700',
+            fontWeight: 'bold',
+            marginLeft: '4px'
+          }}>
+            {bets.lastResults[player.id]}
+          </span>
+        </div>
+      )}
+      <div className="bj-hand-container">
         {hand?.map((card: CardType, index: number) =>
           <Card key={index} number={card.number} suit={card.suit} />
         )}
       </div>
       {liveGame && <Total hand={hand} />}
-      <div>Money: {player.money}</div>
-      <div>Current Bet: {bets.currentBet?.(player.id, key || 0)}</div>
-      <hr />
+      <div className="bj-bet-area">${bets.currentBet?.(player.id, key || 0)}</div>
       {showButtons && (
-        <div style={styles.buttonsRow}>
-          <div style={styles.buttonsColumn}>
-            <button disabled={disableHit} style={buttonHitStyle}
-              onClick={hit}>Hit</button>
-            <button style={styles.button}
-              onClick={stand}>Stand</button>
-          </div>
-          <div style={styles.buttonsColumn}>
-            <button disabled={disableDoubleDown} style={buttonDoubleDownStyle}
-              onClick={doubleDown}>Double Down</button>
-            <button disabled={!enableSplit} style={buttonSplitStyle}
-              onClick={split}>Split</button>
-          </div>
+        <div className="bj-action-buttons">
+          <button disabled={disableHit} className="bj-button"
+            onClick={hit}>Hit</button>
+          <button className="bj-button"
+            onClick={stand}>Stand</button>
+          <button disabled={disableDoubleDown} className="bj-button"
+            onClick={doubleDown}>Double</button>
+          <button disabled={!enableSplit} className="bj-button"
+            onClick={split}>Split</button>
         </div>
       )}
     </div>

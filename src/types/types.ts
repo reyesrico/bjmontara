@@ -58,6 +58,10 @@ export type LastBet = {
   [key: number]: number;         // playerId -> bet
 };
 
+export type LastResult = {
+  [key: number]: 'Won' | 'Lost' | 'Tied';  // playerId -> result
+};
+
 // Insurance
 export type InsuranceType = {
   playerId: number,
@@ -81,4 +85,5 @@ export type BetsControl = {
     result: number;
   }[];
   lastBets: LastBet;
+  lastResults?: LastResult;
 };

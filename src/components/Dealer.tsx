@@ -10,31 +10,13 @@ interface DealerProps {
   gameState: GameState;
 }
 
-const getStyles = () => ({
-  dealerContainer: {
-    display: "flex",
-    justifyContent: "center",
-    flexDirection: "column",
-    alignItems: "center",
-    height: 200,
-  },
-  dealersCardsContainer: {
-    background: "#b08258",
-    display: "flex",
-    justifyContent: "center",
-    flexDirection: "row",
-  },
-} as any);
-
 const Dealer = (props: DealerProps) => {
   const { dealerHand, gameState } = props;
-  const styles = getStyles();
 
   return (
-    <>
-      <h1>Dealer</h1>
-      <div style={styles.dealerContainer}>
-        <div style={styles.dealersCardsContainer}>
+    <div className="bj-dealer-area">
+      <h1 className="bj-dealer-title">DEALER</h1>
+      <div className="bj-dealer-cards">
           {dealerHand.map((card, index) => {      
             const hideCard = index === 1 && gameState === "gameStarted";    
             return (
@@ -44,9 +26,7 @@ const Dealer = (props: DealerProps) => {
           })}
         </div>
         <Total hand={dealerHand} />
-      </div>
-      <hr />
-    </>
+    </div>
   );
 };
 

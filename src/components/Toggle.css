@@ -1,17 +1,17 @@
-label {
+.toggle-label {
   position: relative;
   display: inline-block;
   width: 60px;
   height: 30px;
 }
 
-input {
+.toggle-input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-span {
+.toggle-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -23,7 +23,7 @@ span {
   border-radius: 30px;
 }
 
-span:before {
+.toggle-slider:before {
   position: absolute;
   content: "";
   height: 25px;
@@ -35,10 +35,10 @@ span:before {
   transition: 0.3s;
 }
 
-input:checked + span {
+.toggle-input:checked + .toggle-slider {
   background-color: #00c853;
 }
 
-input:checked + span:before {
+.toggle-input:checked + .toggle-slider:before {
   transform: translateX(29px);
 }

@@ -20,39 +20,18 @@ interface PlayerProps {
   setTurn: (turn: number) => void;
   minBet: number;
   dealerHand: CardType[];
+  onCardsDealt?: (cards: CardType[]) => void;
 }
-
-const getStyles = (args: {
-  playerIndex: number,
-  turn: number 
-}): any => ({
-  container: {
-    display: "flex",
-    flexDirection: "column"
-  },
-  title: {
-    backgroundColor: "#CDA37D",
-    color: "#6A3A1C",
-  },
-  handsContainer: {
-    display: "flex",
-    flexDirection: "row",
-  },
-  handContainer: {
-    display: "flex",
-    flexDirection: "column",
-  }
-});
 
 const Player = (props: PlayerProps) => {
   const { bets, player, turn, playerReady, isLastPlayer, gameState, minBet,
-    dealerHand, deckHook, playersHook, isDealerBJ, setTurn } = props;
-  const styles = getStyles({ playerIndex: player.id, turn });
+    dealerHand, deckHook, playersHook, isDealerBJ, setTurn, onCardsDealt } = props;
   const liveGame = gameState === "gameStarted";
   const waitForBets = gameState === "waitForBets";
 
   const doubleDown = (handId: number, hand: CardType[]) => {
     let card = deckHook.drawCards(1)[0];
+    onCardsDealt?.([card]); // Track dealt card
     hand.push(card);
 
     // Applying double down bet
@@ -68,6 +47,7 @@ const Player = (props: PlayerProps) => {
 
   const split = (handsTurn: number, hand: CardType[]) => {
     const newCards = deckHook.drawCards(2);
+    onCardsDealt?.(newCards); // Track dealt cards
     const firstHand = [hand[0], newCards[0]];
     const secondHand = [hand[1], newCards[1]];
 
@@ -79,6 +59,7 @@ const Player = (props: PlayerProps) => {
 
   const hit = (handId: number) => {
     let card = deckHook.drawCards(1)[0];
+    onCardsDealt?.([card]); // Track dealt card
     playersHook.addCard(player.id, handId, card);
     const hand = playersHook.getHands(player.id)[handId];
 
@@ -110,9 +91,7 @@ const Player = (props: PlayerProps) => {
   }
 
   return (
-    <div style={styles.container} >
-      <h1 style={styles.title}>Player {player.id+1}</h1>
-      <hr />
+    <div>
       {waitForBets &&
         <PlayerBet
           bets={bets}
@@ -122,10 +101,10 @@ const Player = (props: PlayerProps) => {
         />
       }
       {(!waitForBets && !player.hands.length) &&
-        <div style={styles.title}>Player Ready</div>}
-      <div style={styles.handsContainer}>
+        <div className="bj-player-name">Player Ready ✓</div>}
+      <div>
         {player.hands.map((hand, index) => (
-          <div key={index} style={styles.handContainer}>
+          <div key={index}>
             <PlayerHand
               key={index}
               player={player}
