@@ -75,6 +75,7 @@ export type BetsControl = {
   resultBet?: (playerId: number, handsId: number, result: ResultType) => number;
   clearBets?: () => void;
   currentBet?: (playerId: number, handsId: number) => number;
+  snapshotInitialBets?: () => void;
   executeBets?: (
     players: PlayerType[],
     dealerHand: CardType[],

@@ -150,6 +150,10 @@ const BlackJackGame = (props: BlackJackGameProps) => {
   const startGame = () => {
     setPlayersReady({});
     setGameState("gameStarted");
+    
+    // Snapshot initial bets before any splits happen
+    bets.snapshotInitialBets?.();
+    
     let newDealerHand: CardType[] = [];
 
     // Players 1st Card
