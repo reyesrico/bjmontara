@@ -151,7 +151,6 @@ export const countCards = (
     'Running Count': runningCount,
     'True Count Formula': `${runningCount} / ${decksRemaining.toFixed(2)} = ${trueCount}`,
     'True Count': trueCount,
-    '---': '---',
     'Bet Multiplier (based on True Count)': getBettingStrategy(trueCount).betMultiplier
   });
   

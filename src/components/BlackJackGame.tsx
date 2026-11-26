@@ -199,7 +199,7 @@ const BlackJackGame = (props: BlackJackGameProps) => {
     if (dealerBJ) {
       // Dealer has blackjack - reveal second card and add to count before resetting
       console.log('Dealer blackjack - adding hidden card to count');
-      setAllDealtCards(prev => [...prev, dealerSecondCard]);
+      setAllDealtCards(prev => [...prev, ...dealerSecondCard]);
       resetGame();
     }
   }

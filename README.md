@@ -2,6 +2,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+Use Node.js 20.9 or newer. Install dependencies with `npm ci`.
+
 First, run the development server:
 
 ```bash
@@ -15,6 +17,13 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+Run `npm run lint` to lint the project, or `npm run build` to create a production build.
+Start the production build with `npm start`.
+
+The ESLint configuration preserves the existing Hooks lint policy; the newly
+introduced React Compiler immutability, effect-state, and memo rules are disabled
+until a separate gameplay migration.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
